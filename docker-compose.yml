@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  task-schedule:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - EXTERNAL_JOBS_JAR_PATH=/app/external-jobs/tasks.jar
+    volumes:
+      - ./external-jobs:/app/external-jobs
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: luoqiu9464
+      MYSQL_DATABASE: task_schedule
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:

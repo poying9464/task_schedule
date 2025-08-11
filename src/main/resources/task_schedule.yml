@@ -1,0 +1,123 @@
+# Task Schedule Configuration
+# 任务调度系统配置文件，用于配置 Quartz 调度器的各项参数
+
+# Quartz Configuration
+# Quartz 调度器核心配置
+quartz:
+  # Scheduler configuration
+  # 调度器基础配置
+  scheduler:
+    # 实例名称，用于标识调度器实例
+    # 可配置选项：任意字符串，建议使用有意义的名称
+    instanceName: MyQuartzScheduler
+    
+    # 实例ID，用于唯一标识调度器实例，特别是在集群环境中
+    # 可配置选项：
+    # - AUTO: 自动生成实例ID
+    # - 任意字符串: 手动指定实例ID
+    instanceId: AUTO
+  
+  # Thread pool configuration
+  # 线程池配置，用于执行任务
+  threadPool:
+    # 线程池实现类
+    # 可配置选项：
+    # - org.quartz.simpl.SimpleThreadPool: 简单线程池（默认）
+    # - org.quartz.simpl.ZeroSizeThreadPool: 零大小线程池（不执行任务）
+    # - 自定义线程池实现类
+    clazz: org.quartz.simpl.SimpleThreadPool
+    
+    # 线程数量，决定同时可以执行的任务数量
+    # 可配置选项：正整数，建议根据系统资源和任务特点设置
+    # 注意：线程数过多可能导致系统资源竞争，过少可能导致任务排队
+    threadCount: 5
+    
+    # 线程优先级
+    # 可配置选项：1-10之间的整数，数值越大优先级越高
+    # 标准优先级值：
+    # - 1: MIN_PRIORITY (最低优先级)
+    # - 5: NORM_PRIORITY (标准优先级，默认)
+    # - 10: MAX_PRIORITY (最高优先级)
+    threadPriority: 5
+  
+  # Job store configuration - JDBC storage
+  # 作业存储配置，用于存储任务和触发器信息
+  jobStore:
+    # 作业存储实现类
+    # 可配置选项：
+    # - org.quartz.simpl.RAMJobStore: 内存存储（不持久化）
+    # - org.quartz.impl.jdbcjobstore.JobStoreTX: JDBC存储（使用Quartz管理事务）
+    # - org.quartz.impl.jdbcjobstore.JobStoreCMT: JDBC存储（使用容器管理事务）
+    clazz: org.quartz.impl.jdbcjobstore.JobStoreTX
+    
+    # 数据库驱动委托类，用于处理不同数据库的SQL方言
+    # 可配置选项：
+    # - org.quartz.impl.jdbcjobstore.StdJDBCDelegate: 标准JDBC委托（适用于大多数数据库）
+    # - org.quartz.impl.jdbcjobstore.oracle.OracleDelegate: Oracle数据库委托
+    # - org.quartz.impl.jdbcjobstore.mysql.MySQLDelegate: MySQL数据库委托
+    # - org.quartz.impl.jdbcjobstore.PostgreSQLDelegate: PostgreSQL数据库委托
+    # - 其他特定数据库委托类
+    driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+    
+    # 数据库表前缀，Quartz表名将以此前缀开头
+    # 可配置选项：任意字符串，默认为QRTZ_
+    tablePrefix: QRTZ_
+    
+    # 是否启用集群模式
+    # 可配置选项：
+    # - true: 启用集群模式（需要数据库支持）
+    # - false: 禁用集群模式（单节点模式）
+    clustered: false
+    
+    # 是否将JobDataMaps中的属性值存储为字符串
+    # 可配置选项：
+    # - true: 所有属性值都存储为字符串
+    # - false: 保持原始数据类型（默认）
+    useProperties: false
+    
+    # 数据源名称，引用dataSource部分定义的数据源
+    # 可配置选项：与dataSource部分定义的数据源名称一致
+    dataSource: myDS
+  
+  # Data source configuration
+  # 数据源配置，用于连接数据库
+  dataSource:
+    # 数据源名称，与jobStore.dataSource引用的名称一致
+    myDS:
+      # 数据库驱动类名
+      # 可配置选项：
+      # - com.mysql.cj.jdbc.Driver: MySQL 8.0+驱动
+      # - com.mysql.jdbc.Driver: MySQL旧版本驱动
+      # - oracle.jdbc.OracleDriver: Oracle数据库驱动
+      # - org.postgresql.Driver: PostgreSQL数据库驱动
+      # - 其他数据库驱动类
+      driver: com.mysql.cj.jdbc.Driver
+      
+      # 数据库连接URL
+      # 可配置选项：根据实际数据库地址、端口、数据库名进行配置
+      # 常用参数：
+      # - createDatabaseIfNotExist=true: 如果数据库不存在则创建
+      # - useUnicode=true: 使用Unicode编码
+      # - characterEncoding=UTF-8: 字符编码
+      # - serverTimezone=Asia/Shanghai: 服务器时区
+      URL: jdbc:mysql://192.168.4.128:3306/task_schedule?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      
+      # 数据库用户名
+      # 可配置选项：实际数据库用户名
+      user: root
+      
+      # 数据库密码
+      # 可配置选项：实际数据库密码
+      password: luoqiu9464
+      
+      # 数据库连接池最大连接数
+      # 可配置选项：正整数，建议根据并发任务数量和系统资源设置
+      maxConnections: 10
+      
+      # 连接验证查询语句，用于检查连接是否有效
+      # 可配置选项：
+      # - select 1: 通用验证语句
+      # - SELECT 1: MySQL验证语句
+      # - SELECT 1 FROM DUAL: Oracle验证语句
+      # - SELECT version(): PostgreSQL验证语句
+      validationQuery: select 1
