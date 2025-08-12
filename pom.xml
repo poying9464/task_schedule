@@ -30,12 +30,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-quartz</artifactId>
         </dependency>
-        
-        <!-- Quartz extensions模块 -->
+
         <dependency>
-            <groupId>org.quartz-scheduler</groupId>
-            <artifactId>quartz-extensions</artifactId>
-            <version>2.3.2</version>
+            <groupId>org.poying</groupId>
+            <artifactId>task-schedule-base</artifactId>
+            <version>1.0.0</version>
         </dependency>
         
         <!-- MyBatis-Plus依赖 -->
