@@ -1,4 +1,4 @@
-package org.poying.entity;
+package org.poying.e;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
