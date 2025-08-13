@@ -1,7 +1,7 @@
 package org.poying.jobs;
 
 import org.poying.base.annotations.TaskRunnerProcessor;
-import org.poying.config.Task.TaskConsumingTimeSurround;
+import org.poying.config.Task.TaskResourcesSurround;
 import org.poying.config.Task.TaskRunTimesRateSurround;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -10,7 +10,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.UUID;
 
-@TaskRunnerProcessor(surrounds = {TaskConsumingTimeSurround.class,
+@TaskRunnerProcessor(surrounds = {TaskResourcesSurround.class,
         TaskRunTimesRateSurround.class})
 public class TestJob extends BaseJob {
     
