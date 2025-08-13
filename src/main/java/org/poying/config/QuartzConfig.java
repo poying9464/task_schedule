@@ -22,6 +22,9 @@ public class QuartzConfig {
 
     @Autowired
     private TaskResourcesSurround taskResourcesSurround;
+    
+    @Autowired
+    private TaskScheduleProperties taskScheduleProperties;
 
     /**
      * 配置JobFactory，使Quartz能够使用Spring的依赖注入
@@ -57,17 +60,35 @@ public class QuartzConfig {
 
         // 设置Quartz属性
         Properties properties = new Properties();
-        properties.put("org.quartz.scheduler.instanceName", "TaskScheduleScheduler");
-        properties.put("org.quartz.scheduler.instanceId", "AUTO");
+        
+        // Scheduler configuration
+        TaskScheduleProperties.Scheduler schedulerConfig = taskScheduleProperties.getScheduler();
+        properties.put("org.quartz.scheduler.instanceName", schedulerConfig.getInstanceName());
+        properties.put("org.quartz.scheduler.instanceId", schedulerConfig.getInstanceId());
 
         // 线程池配置
-        properties.put("org.quartz.threadPool.threadCount", "10");
+        TaskScheduleProperties.ThreadPool threadPoolConfig = taskScheduleProperties.getThreadPool();
+        properties.put("org.quartz.threadPool.class", threadPoolConfig.getClazz());
+        properties.put("org.quartz.threadPool.threadCount", String.valueOf(threadPoolConfig.getThreadCount()));
+        properties.put("org.quartz.threadPool.threadPriority", String.valueOf(threadPoolConfig.getThreadPriority()));
 
         // JobStore配置
-        properties.put("org.quartz.jobStore.class", "org.quartz.impl.jdbcjobstore.JobStoreTX");
-        properties.put("org.quartz.jobStore.driverDelegateClass", "org.quartz.impl.jdbcjobstore.StdJDBCDelegate");
-        properties.put("org.quartz.jobStore.tablePrefix", "QRTZ_");
-        properties.put("org.quartz.jobStore.isClustered", "false");
+        TaskScheduleProperties.JobStore jobStoreConfig = taskScheduleProperties.getJobStore();
+        properties.put("org.quartz.jobStore.class", jobStoreConfig.getClazz());
+        properties.put("org.quartz.jobStore.driverDelegateClass", jobStoreConfig.getDriverDelegateClass());
+        properties.put("org.quartz.jobStore.tablePrefix", jobStoreConfig.getTablePrefix());
+        properties.put("org.quartz.jobStore.isClustered", String.valueOf(jobStoreConfig.isClustered()));
+        properties.put("org.quartz.jobStore.useProperties", String.valueOf(jobStoreConfig.isUseProperties()));
+        properties.put("org.quartz.jobStore.dataSource", jobStoreConfig.getDataSource());
+
+        // 数据源配置
+        TaskScheduleProperties.DataSource.MyDS dataSourceConfig = taskScheduleProperties.getDataSource().getMyDS();
+        properties.put("org.quartz.dataSource.myDS.driver", dataSourceConfig.getDriver());
+        properties.put("org.quartz.dataSource.myDS.URL", dataSourceConfig.getURL());
+        properties.put("org.quartz.dataSource.myDS.user", dataSourceConfig.getUser());
+        properties.put("org.quartz.dataSource.myDS.password", dataSourceConfig.getPassword());
+        properties.put("org.quartz.dataSource.myDS.maxConnections", String.valueOf(dataSourceConfig.getMaxConnections()));
+        properties.put("org.quartz.dataSource.myDS.validationQuery", dataSourceConfig.getValidationQuery());
 
         factory.setQuartzProperties(properties);
         factory.setApplicationContext(applicationContext);
