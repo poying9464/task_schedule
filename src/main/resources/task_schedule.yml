@@ -9,16 +9,16 @@ quartz:
   
   # Thread pool configuration
   threadPool:
-    class: org.quartz.simpl.SimpleThreadPool
+    clazz: org.quartz.simpl.SimpleThreadPool
     threadCount: 5
     threadPriority: 5
   
   # Job store configuration - JDBC storage
   jobStore:
-    class: org.quartz.impl.jdbcjobstore.JobStoreTX
+    clazz: org.quartz.impl.jdbcjobstore.JobStoreTX
     driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
     tablePrefix: QRTZ_
-    isClustered: false
+    clustered: false
     useProperties: false
     dataSource: myDS
   
@@ -31,28 +31,3 @@ quartz:
       password: luoqiu9464
       maxConnections: 10
       validationQuery: select 1
-
-# Task configuration
-tasks:
-  - name: sampleJob
-    className: org.poying.jobs.SampleJob
-    trigger:
-      name: sampleJobTrigger
-      type: simple
-      intervalInSeconds: 10
-      repeatForever: true
-  
-  - name: fiveMinuteJob
-    className: org.poying.jobs.FiveMinuteJob
-    trigger:
-      name: fiveMinuteJobTrigger
-      type: cron
-      cronExpression: 0 0/5 * * * ?
-      
-  - name: testJob
-    className: org.poying.jobs.TestJob
-    trigger:
-      name: testJobTrigger
-      type: simple
-      intervalInSeconds: 30
-      repeatForever: true
