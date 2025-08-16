@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>任务调度系统 - 登录</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.27/dist/vue.global.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.7.2/dist/axios.min.js"></script>
+    <style>
+        /* 全局样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 背景动画 */
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(circle at 20% 20%, rgba(52, 152, 219, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 80% 30%, rgba(46, 204, 113, 0.15) 0%, transparent 25%),
+                radial-gradient(circle at 40% 80%, rgba(52, 152, 219, 0.15) 0%, transparent 20%),
+                radial-gradient(circle at 70% 70%, rgba(46, 204, 113, 0.15) 0%, transparent 15%);
+            animation: moveBackground 20s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+
+        @keyframes moveBackground {
+            0% {
+                background-position: 0% 0%, 100% 0%, 0% 100%, 100% 100%;
+            }
+            100% {
+                background-position: 10% 10%, 90% 10%, 10% 90%, 90% 90%;
+            }
+        }
+
+        /* 装饰元素 - 时钟 */
+        .clock-decoration {
+            position: absolute;
+            top: 10%;
+            right: 10%;
+            width: 120px;
+            height: 120px;
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+
+        .clock-inner {
+            width: 100px;
+            height: 100px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            position: relative;
+        }
+
+        .clock-hand {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.6);
+            transform-origin: bottom center;
+            left: 50%;
+            bottom: 50%;
+        }
+
+        .hour-hand {
+            width: 2px;
+            height: 25px;
+            transform: translateX(-50%) rotate(30deg);
+        }
+
+        .minute-hand {
+            width: 2px;
+            height: 35px;
+            transform: translateX(-50%) rotate(60deg);
+        }
+
+        .second-hand {
+            width: 1px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: translateX(-50%) rotate(120deg);
+            animation: rotateSecondHand 60s linear infinite;
+        }
+
+        @keyframes rotateSecondHand {
+            from { transform: translateX(-50%) rotate(0deg); }
+            to { transform: translateX(-50%) rotate(360deg); }
+        }
+
+        /* 装饰元素 - 代码块 */
+        .code-decoration {
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.2);
+            white-space: pre;
+            line-height: 1.4;
+            z-index: 1;
+            transform: rotate(-5deg);
+        }
+
+        /* 登录容器 */
+        .login-container {
+            background: rgba(255, 255, 255, 0.98);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            padding: 45px;
+            width: 100%;
+            max-width: 440px;
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .login-container::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(135deg, rgba(52, 152, 219, 0.05) 0%, rgba(46, 204, 113, 0.05) 100%);
+            transform: rotate(30deg);
+            z-index: -1;
+        }
+
+        /* 系统图标与标题 */
+        .system-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 25px;
+            background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 15px rgba(52, 152, 219, 0.3);
+            position: relative;
+        }
+
+        .system-icon svg {
+            width: 40px;
+            height: 40px;
+            fill: white;
+        }
+
+        .login-title {
+            font-size: 32px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .login-subtitle {
+            font-size: 16px;
+            color: #7f8c8d;
+            margin-bottom: 35px;
+            font-weight: 400;
+        }
+
+        /* 输入组 */
+        .input-group {
+            margin-bottom: 25px;
+            text-align: left;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #34495e;
+            font-weight: 600;
+            font-size: 14px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .input-wrapper {
+            position: relative;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #95a5a6;
+            width: 20px;
+            height: 20px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 15px 14px 45px;
+            border: 2px solid #e0e6ed;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            outline: none;
+            background-color: #f9f9f9;
+            color: #2c3e50;
+        }
+
+        .input-group input:focus {
+            border-color: #3498db;
+            background-color: white;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+        }
+
+        .input-group input::placeholder {
+            color: #bdc3c7;
+        }
+
+        /* 登录按钮 */
+        .login-button {
+            width: 100%;
+            padding: 15px;
+            background: linear-gradient(135deg, #3498db 0%, #2ecc71 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            position: relative;
+            overflow: hidden;
+            letter-spacing: 0.5px;
+        }
+
+        .login-button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            transition: transform 0.6s ease;
+        }
+
+        .login-button:hover::before {
+            transform: translate(-50%, -50%) scale(1);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(52, 152, 219, 0.4);
+        }
+
+        .login-button:active {
+            transform: translateY(0);
+        }
+
+        .login-button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* 加载状态 */
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 错误信息 */
+        .error-message {
+            color: #e74c3c;
+            background-color: #fef2f2;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-size: 14px;
+            border-left: 4px solid #e74c3c;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 系统信息 */
+        .system-info {
+            margin-top: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #6c757d;
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .system-info:hover {
+            background: #e9ecef;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        }
+
+        .system-info p {
+            margin: 8px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .system-info-icon {
+            width: 16px;
+            height: 16px;
+            margin-right: 8px;
+            color: #3498db;
+        }
+
+        /* 页脚 */
+        .login-footer {
+            margin-top: 30px;
+            font-size: 13px;
+            color: #95a5a6;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .clock-decoration,
+            .code-decoration {
+                display: none;
+            }
+
+            .login-container {
+                margin: 20px;
+                padding: 35px 25px;
+            }
+
+            .login-title {
+                font-size: 28px;
+            }
+
+            .system-icon {
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        /* 微交互效果 */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-container {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        .input-group:nth-child(1) {
+            animation: fadeInUp 0.6s ease-out 0.1s both;
+        }
+
+        .input-group:nth-child(2) {
+            animation: fadeInUp 0.6s ease-out 0.2s both;
+        }
+
+        .login-button {
+            animation: fadeInUp 0.6s ease-out 0.3s both;
+        }
+
+        .system-info {
+            animation: fadeInUp 0.6s ease-out 0.4s both;
+        }
+    </style>
+</head>
+<body>
+    <!-- 背景装饰元素 -->
+    <div class="clock-decoration">
+        <div class="clock-inner">
+            <div class="clock-hand hour-hand"></div>
+            <div class="clock-hand minute-hand"></div>
+            <div class="clock-hand second-hand"></div>
+        </div>
+    </div>
+
+    <div class="code-decoration">
+{# Task Schedule System #}
+def schedule_task():
+    cron = "0 0 * * *"
+    execute_task()
+
+if __name__ == "__main__":
+    schedule_task()
+    
+# 定时任务管理系统
+    </div>
+
+    <!-- 登录表单 -->
+    <div id="app">
+        <div class="login-container">
+            <!-- 系统图标 -->
+            <div class="system-icon">
+                <svg viewBox="0 0 24 24">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                </svg>
+            </div>
+            
+            <!-- 标题 -->
+            <h1 class="login-title">任务调度系统</h1>
+            <p class="login-subtitle">高效可靠的定时任务管理平台</p>
+            
+            <!-- 输入框 -->
+            <div class="input-group">
+                <label for="username">用户名</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    <input type="text" id="username" v-model="username" placeholder="请输入用户名" @keyup.enter="login" autocomplete="username">
+                </div>
+            </div>
+            
+            <div class="input-group">
+                <label for="password">密码</label>
+                <div class="input-wrapper">
+                    <svg class="input-icon" viewBox="0 0 24 24">
+                        <path d="M12 15c1.66 0 3-1.34 3-3S13.66 9 12 9s-3 1.34-3 3 1.34 3 3 3zm0-9c2.21 0 4 1.79 4 4s-1.79 4-4 4-4-1.79-4-4 1.79-4 4-4zm0-4C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z"/>
+                    </svg>
+                    <input type="password" id="password" v-model="password" placeholder="请输入密码" @keyup.enter="login" autocomplete="current-password">
+                </div>
+            </div>
+            
+            <!-- 登录按钮 -->
+            <button class="login-button" @click="login" :disabled="loading">
+                <span v-if="loading" class="loading-spinner"></span>
+                <span v-if="!loading">安全登录</span>
+                <span v-else>登录验证中...</span>
+            </button>
+            
+            <!-- 错误信息 -->
+            <div class="error-message" v-if="errorMessage" @click="errorMessage = ''">
+                {{ errorMessage }}
+            </div>
+            
+            <!-- 系统信息 -->
+            <div class="system-info">
+                <p>
+                    <svg class="system-info-icon" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+                    </svg>
+                    默认账号: admin
+                </p>
+                <p>
+                    <svg class="system-info-icon" viewBox="0 0 24 24">
+                        <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+                    </svg>
+                    默认密码: task1234
+                </p>
+            </div>
+            
+            <!-- 页脚 -->
+            <div class="login-footer">
+                &copy; {{ new Date().getFullYear() }} 任务调度系统 - 专业的定时任务管理平台
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+        
+        createApp({
+            data() {
+                return {
+                    username: '',
+                    password: '',
+                    errorMessage: '',
+                    loading: false
+                }
+            },
+            methods: {
+                async login() {
+                    // 简单的前端验证
+                    if (!this.username || !this.password) {
+                        this.errorMessage = '请输入用户名和密码';
+                        // 错误信息3秒后自动消失
+                        setTimeout(() => {
+                            this.errorMessage = '';
+                        }, 3000);
+                        return;
+                    }
+                    
+                    // 使用后端接口进行登录验证
+                    this.loading = true;
+                    this.errorMessage = '';
+                    
+                    try {
+                        const response = await axios.post('/api/user/login', {
+                            username: this.username,
+                            password: this.password
+                        });
+                        
+                        if (response.data.success) {
+                            // 保存登录状态到localStorage
+                            localStorage.setItem('isLoggedIn', 'true');
+                            // 添加登录成功的动画效果
+                            const loginContainer = document.querySelector('.login-container');
+                            loginContainer.style.transition = 'all 0.5s ease';
+                            loginContainer.style.transform = 'scale(0.95)';
+                            loginContainer.style.opacity = '0.7';
+                            
+                            // 跳转到任务管理页面
+                            setTimeout(() => {
+                                window.location.href = '/index.html';
+                            }, 500);
+                        } else {
+                            this.errorMessage = response.data.message || '登录失败，请检查用户名和密码';
+                            // 错误信息3秒后自动消失
+                            setTimeout(() => {
+                                this.errorMessage = '';
+                            }, 3000);
+                        }
+                    } catch (error) {
+                        console.error('登录失败:', error);
+                        this.errorMessage = '登录失败，请稍后重试';
+                        // 错误信息3秒后自动消失
+                        setTimeout(() => {
+                            this.errorMessage = '';
+                        }, 3000);
+                    } finally {
+                        this.loading = false;
+                    }
+                }
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>

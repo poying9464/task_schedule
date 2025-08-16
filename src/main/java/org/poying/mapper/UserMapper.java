@@ -2,9 +2,9 @@ package org.poying.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import org.apache.ibatis.annotations.Mapper;
-import org.poying.vo.Task;
+import org.poying.vo.User;
 
 @Mapper
-public interface TaskMapper extends BaseMapper<Task> {
+public interface UserMapper extends BaseMapper<User> {
     
 }

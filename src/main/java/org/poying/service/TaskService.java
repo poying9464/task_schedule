@@ -1,7 +1,7 @@
 package org.poying.service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
-import org.poying.e.Task;
+import org.poying.vo.Task;
 
 public interface TaskService extends IService<Task> {
     

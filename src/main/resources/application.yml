@@ -27,7 +27,7 @@ spring:
 # MyBatis-Plus配置
 mybatis-plus:
   mapper-locations: classpath*:mapper/**/*.xml
-  type-aliases-package: org.poying.entity
+  type-aliases-package: org.poying.e,org.poying.vo
   configuration:
     map-underscore-to-camel-case: true
     cache-enabled: false
