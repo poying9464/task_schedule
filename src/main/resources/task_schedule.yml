@@ -100,7 +100,7 @@ quartz:
       # - useUnicode=true: 使用Unicode编码
       # - characterEncoding=UTF-8: 字符编码
       # - serverTimezone=Asia/Shanghai: 服务器时区
-      URL: jdbc:mysql://192.168.4.128:3306/task_schedule?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+      url: jdbc:mysql://192.168.4.128:3306/task_schedule?createDatabaseIfNotExist=true&useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
 
       # 数据库用户名
       # 可配置选项：实际数据库用户名

@@ -182,7 +182,7 @@ public class TaskScheduleProperties {
         
         public static class MyDS {
             private String driver = "com.mysql.cj.jdbc.Driver";
-            private String URL = "";
+            private String url = "";
             private String user = "";
             private String password = "";
             private int maxConnections = 10;
@@ -196,15 +196,15 @@ public class TaskScheduleProperties {
             public void setDriver(String driver) {
                 this.driver = driver;
             }
-            
-            public String getURL() {
-                return URL;
+
+            public String getUrl() {
+                return url;
             }
-            
-            public void setURL(String URL) {
-                this.URL = URL;
+
+            public void setUrl(String url) {
+                this.url = url;
             }
-            
+
             public String getUser() {
                 return user;
             }

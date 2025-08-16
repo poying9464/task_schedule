@@ -84,7 +84,7 @@ public class QuartzConfig {
         // 数据源配置
         TaskScheduleProperties.DataSource.MyDS dataSourceConfig = taskScheduleProperties.getDataSource().getMyDS();
         properties.put("org.quartz.dataSource.myDS.driver", dataSourceConfig.getDriver());
-        properties.put("org.quartz.dataSource.myDS.URL", dataSourceConfig.getURL());
+        properties.put("org.quartz.dataSource.myDS.URL", dataSourceConfig.getUrl());
         properties.put("org.quartz.dataSource.myDS.user", dataSourceConfig.getUser());
         properties.put("org.quartz.dataSource.myDS.password", dataSourceConfig.getPassword());
         properties.put("org.quartz.dataSource.myDS.maxConnections", String.valueOf(dataSourceConfig.getMaxConnections()));

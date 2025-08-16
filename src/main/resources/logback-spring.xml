@@ -36,16 +36,16 @@
     <!-- 动态任务日志文件，根据MDC中的jobName生成不同的日志文件 -->
     <appender name="TASK_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <!-- 使用MDC中的jobName属性作为文件名的一部分 -->
-        <file>${LOG_HOME}/task_schedule_%mdc{jobName:-default}.log</file>
+        <file>${LOG_HOME}/task_schedule_${mdc:jobName:-default}.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>${LOG_HOME}/task_schedule_%mdc{jobName:-default}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>${LOG_HOME}/task_schedule_${mdc:jobName:-default}.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxHistory>30</maxHistory>
             <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
         </rollingPolicy>
         <encoder>
-            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSL} [%thread] %-5level %logger{50} - %msg%n</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
             <charset>UTF-8</charset>
         </encoder>
         <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
