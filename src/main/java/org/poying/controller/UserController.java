@@ -3,8 +3,14 @@ package org.poying.controller;
 import org.poying.e.Unify;
 import org.poying.service.UserService;
 import org.poying.vo.User;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,23 +19,40 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/user")
 public class UserController {
-    
+
+    private static final Logger log = LoggerFactory.getLogger(UserController.class);
     @Autowired
     private UserService userService;
     
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+
     @PostMapping("/login")
     public Unify<Map<String, Object>> login(@RequestBody Map<String, String> credentials) {
         String username = credentials.get("username");
         String password = credentials.get("password");
         
-        User user = userService.login(username, password);
         Map<String, Object> response = new HashMap<>();
         
-        if (user != null) {
+        try {
+            // 使用Spring Security的AuthenticationManager进行认证
+            Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+            );
+            
+            // 将认证对象设置到SecurityContext中，完成登录
+            SecurityContextHolder.getContext().setAuthentication(authentication);
+            // 获取当前登录用户的token
+
+            // 获取用户信息
+            User user = userService.findByUsername(username);
+            
             response.put("success", true);
             response.put("message", "登录成功");
             response.put("user", Map.of("id", user.getId(), "username", user.getUsername()));
-        } else {
+        } catch (Exception e) {
+            log.error("登录失败: ", e);
             response.put("success", false);
             response.put("message", "用户名或密码错误");
         }

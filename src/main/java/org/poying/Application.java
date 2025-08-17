@@ -44,7 +44,7 @@ public class Application {
         @Override
         public void addViewControllers(ViewControllerRegistry registry) {
             // 默认页面映射
-            registry.addViewController("/").setViewName("redirect:/index.html");
+            registry.addViewController("/").setViewName("redirect:/login.html");
         }
     }
 }

@@ -4,1230 +4,319 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>任务调度系统 - 监控管理</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f5f5f5;
-            color: #333;
-        }
-        
-        .header {
-            background-color: #007bff;
-            color: white;
-            padding: 1rem 2rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-        }
-        
-        .logout-btn {
-            background-color: #dc3545;
-            color: white;
-            border: none;
-            padding: 0.5rem 1rem;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.3s;
-        }
-        
-        .logout-btn:hover {
-            background-color: #c82333;
-        }
-        
-        .container {
-            max-width: 1400px;
-            margin: 2rem auto;
-            padding: 0 1rem;
-        }
-        
-        .dashboard {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 1rem;
-            margin-bottom: 2rem;
-        }
-        
-        .card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            transition: transform 0.3s, box-shadow 0.3s;
-        }
-        
-        .card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        .card-title {
-            font-size: 1rem;
-            margin-bottom: 0.8rem;
-            color: #666;
-            font-weight: 500;
-        }
-        
-        .metric-value {
-            font-size: 2.2rem;
-            font-weight: bold;
-            text-align: center;
-            color: #007bff;
-        }
-        
-        .metric-change {
-            text-align: center;
-            font-size: 0.9rem;
-            margin-top: 0.5rem;
-        }
-        
-        .positive-change {
-            color: #28a745;
-        }
-        
-        .negative-change {
-            color: #dc3545;
-        }
-        
-        .tasks-table {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin-bottom: 2rem;
-        }
-        
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-        
-        th, td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-        
-        th {
-            background-color: #f8f9fa;
-            font-weight: 600;
-            color: #495057;
-        }
-        
-        tr:hover {
-            background-color: #f8f9fa;
-        }
-        
-        .status-running {
-            color: #28a745;
-            font-weight: bold;
-        }
-        
-        .status-paused {
-            color: #ffc107;
-            font-weight: bold;
-        }
-        
-        .status-waiting {
-            color: #17a2b8;
-            font-weight: bold;
-        }
-        
-        .status-inactive {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        
-        .action-btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-right: 0.5rem;
-            font-size: 0.85rem;
-            transition: background-color 0.3s;
-        }
-        
-        .action-btn:hover {
-            background-color: #0056b3;
-        }
-        
-        .action-btn.delete {
-            background-color: #dc3545;
-        }
-        
-        .action-btn.delete:hover {
-            background-color: #c82333;
-        }
-        
-        .no-data {
-            text-align: center;
-            padding: 3rem;
-            color: #666;
-        }
+    <link rel="icon" href="/img/ff.jpg" type="image/jpeg">
+    <link rel="shortcut icon" href="/img/ff.jpg" type="image/jpeg">
+    <link rel="apple-touch-icon" href="/img/ff.jpg" type="image/jpeg">
+    <link rel="icon" href="/favicon.ico" type="image/jpeg" sizes="16x16">
 
-        .loading {
-            text-align: center;
-            padding: 3rem;
-            color: #007bff;
-        }
-        
-        .charts-section {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .chart-card {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-        }
-        
-        .chart-title {
-            font-size: 1.2rem;
-            margin-bottom: 1rem;
-            color: #333;
-            font-weight: 500;
-        }
-        
-        .chart-container {
-            position: relative;
-            height: 300px;
-        }
-        
-        .tabs {
-            display: flex;
-            margin-bottom: 1rem;
-            background-color: white;
-            border-radius: 8px;
-            padding: 0.5rem;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        }
-        
-        .tab {
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            border-radius: 4px;
-            transition: background-color 0.3s;
-            margin-right: 0.5rem;
-        }
-        
-        .tab.active {
-            background-color: #007bff;
-            color: white;
-        }
-        
-        .time-filter {
-            display: flex;
-            justify-content: flex-end;
-            margin-bottom: 1rem;
-        }
-        
-        .time-filter button {
-            background-color: white;
-            border: 1px solid #ddd;
-            padding: 0.4rem 0.8rem;
-            margin-left: 0.5rem;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 0.9rem;
-            transition: all 0.3s;
-        }
-        
-        .time-filter button.active {
-            background-color: #007bff;
-            color: white;
-            border-color: #007bff;
-        }
-        
-        .task-details {
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-        }
-        
-        .task-details-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 1rem;
-            padding-bottom: 1rem;
-            border-bottom: 1px solid #eee;
-        }
-        
-        .task-details-title {
-            font-size: 1.2rem;
-            font-weight: 500;
-            color: #333;
-        }
-        
-        .task-details-close {
-            background: none;
-            border: none;
-            font-size: 1.2rem;
-            cursor: pointer;
-            color: #666;
-        }
-        
-        .task-metrics-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-        }
-        
-        .stat-item {
-            display: flex;
-            flex-direction: column;
-            padding: 1rem;
-            background-color: #f8f9fa;
-            border-radius: 6px;
-        }
-        
-        .stat-label {
-            font-size: 0.9rem;
-            color: #666;
-            margin-bottom: 0.5rem;
-        }
-        
-        .stat-value {
-            font-size: 1.3rem;
-            font-weight: bold;
-            color: #333;
-        }
-    </style>
+    <!-- 引入第三方库 -->
+    <script src="/lib/vue.global.js"></script>
+    <script src="/lib/axios.min.js"></script>
+    <script src="/lib/chart.umd.min.js"></script>
+
+    <!-- 引入Element Plus -->
+    <link rel="stylesheet" href="/lib/element-plus.css">
+    <script src="/lib/element-plus.js"></script>
+
+    <!-- 引入自定义样式 -->
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 <body>
     <div id="app">
-        <div class="header">
-            <h1>任务调度系统</h1>
-            <button class="logout-btn" @click="logout">退出登录</button>
-        </div>
-        
-        <div class="container">
-            <!-- 监控指标展示 -->
-            <!-- 主要监控指标 -->
-        <div class="dashboard">
-            <div class="card">
-                <div class="card-title">总任务数</div>
-                <div class="metric-value">{{ metrics.totalTasks }}</div>
-                <div class="metric-change positive-change">+5 今日新增</div>
+        <!-- 顶部导航栏 -->
+        <el-header class="header">
+            <div class="header-left">
+                <h1>任务调度系统</h1>
             </div>
-            
-            <div class="card">
-                <div class="card-title">活跃任务数</div>
-                <div class="metric-value">{{ metrics.activeTasks }}</div>
-                <div class="metric-change positive-change">85% 活跃率</div>
+            <div class="header-right">
+                <el-avatar :size="40" class="user-avatar">
+                    <img src="/img/ff.jpg" alt="用户头像">
+                </el-avatar>
+                <el-button type="danger" @click="logout" class="logout-btn">退出登录</el-button>
             </div>
-            
-            <div class="card">
-                <div class="card-title">执行成功数</div>
-                <div class="metric-value">{{ metrics.successCount }}</div>
-                <div class="metric-change positive-change">+124 今日</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">执行失败数</div>
-                <div class="metric-value">{{ metrics.failCount }}</div>
-                <div class="metric-change negative-change">-3 较昨日</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">平均执行时间</div>
-                <div class="metric-value">{{ metrics.avgExecuteTime }}ms</div>
-                <div class="metric-change positive-change">-15% 较昨日</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">执行成功率</div>
-                <div class="metric-value">{{ metrics.successRate }}%</div>
-                <div class="metric-change positive-change">+2.1% 较昨日</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">最长执行时间</div>
-                <div class="metric-value">{{ metrics.maxExecuteTime }}ms</div>
-            </div>
-            
-            <div class="card">
-                <div class="card-title">最短执行时间</div>
-                <div class="metric-value">{{ metrics.minExecuteTime }}ms</div>
-            </div>
-        </div>
-        
-        <!-- 时间筛选 -->
-        <div class="time-filter">
-            <button :class="{active: timeRange === 'hour'}" @click="timeRange = 'hour'">小时</button>
-            <button :class="{active: timeRange === 'day'}" @click="timeRange = 'day'">天</button>
-            <button :class="{active: timeRange === 'week'}" @click="timeRange = 'week'">周</button>
-            <button :class="{active: timeRange === 'month'}" @click="timeRange = 'month'">月</button>
-        </div>
-        
-        <!-- 图表展示区域 -->
-        <div class="charts-section">
-            <!-- 执行次数趋势图 -->
-            <div class="chart-card">
-                <div class="chart-title">执行次数趋势</div>
-                <div class="chart-container">
-                    <canvas ref="executeCountChart"></canvas>
-                </div>
-            </div>
-            
-            <!-- 成功率趋势图 -->
-            <div class="chart-card">
-                <div class="chart-title">成功率趋势</div>
-                <div class="chart-container">
-                    <canvas ref="successRateChart"></canvas>
-                </div>
-            </div>
-            
-            <!-- 执行时间趋势图 -->
-            <div class="chart-card">
-                <div class="chart-title">执行时间趋势</div>
-                <div class="chart-container">
-                    <canvas ref="executeTimeChart"></canvas>
-                </div>
-            </div>
-            
-            <!-- 错误类型分布 -->
-            <div class="chart-card">
-                <div class="chart-title">错误类型分布</div>
-                <div class="chart-container">
-                    <canvas ref="errorTypeChart"></canvas>
-                </div>
-            </div>
-        </div>
-        
-        <!-- 标签页 -->
-        <div class="tabs">
-            <div :class="{tab: true, active: activeTab === 'taskList'}" @click="activeTab = 'taskList'">任务列表</div>
-            <div :class="{tab: true, active: activeTab === 'topTasks'}" @click="activeTab = 'topTasks'">任务排行</div>
-            <div :class="{tab: true, active: activeTab === 'failTasks'}" @click="activeTab = 'failTasks'">失败任务</div>
-        </div>
-            
-        <!-- 任务列表 -->
-        <div v-if="activeTab === 'taskList'" class="tasks-table">
-            <table>
-                <thead>
-                    <tr>
-                        <th>任务名称</th>
-                        <th>任务分组</th>
-                        <th>任务描述</th>
-                        <th>Cron表达式</th>
-                        <th>任务类名</th>
-                        <th>状态</th>
-                        <th>上次执行</th>
-                        <th>下次执行</th>
-                        <th>成功率</th>
-                        <th>操作</th>
-                    </tr>
-                </thead>
-                <tbody v-if="loading">
-                    <tr>
-                        <td colspan="10" class="loading">加载中...</td>
-                    </tr>
-                </tbody>
-                <tbody v-else-if="tasks.length === 0">
-                    <tr>
-                        <td colspan="10" class="no-data">暂无任务数据</td>
-                    </tr>
-                </tbody>
-                <tbody v-else>
-                    <tr v-for="task in tasks" :key="task.id">
-                        <td>{{ task.taskName }}</td>
-                        <td>{{ task.taskGroup }}</td>
-                        <td>{{ task.taskDesc }}</td>
-                        <td>{{ task.cronExpression }}</td>
-                        <td>{{ task.jobClass }}</td>
-                        <td :class="getStatusClass(task.status)">
-                            {{ getStatusText(task.status) }}
-                        </td>
-                        <td>{{ formatDateTime(task.lastExecuteTime) }}</td>
-                        <td>{{ formatDateTime(task.nextExecuteTime) }}</td>
-                        <td>{{ task.successRate }}%</td>
-                        <td>
-                            <button class="action-btn" @click="viewTaskDetails(task)">详情</button>
-                            <button class="action-btn" @click="executeTask(task)">执行</button>
-                            <button class="action-btn delete" @click="deleteTask(task)">删除</button>
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        
-        <!-- 任务排行榜 -->
-        <div v-else-if="activeTab === 'topTasks'">
-            <div class="tasks-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>排名</th>
-                            <th>任务名称</th>
-                            <th>任务分组</th>
-                            <th>执行次数</th>
-                            <th>成功次数</th>
-                            <th>成功率</th>
-                            <th>平均执行时间</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(task, index) in topTasks" :key="task.id">
-                            <td>{{ index + 1 }}</td>
-                            <td>{{ task.taskName }}</td>
-                            <td>{{ task.taskGroup }}</td>
-                            <td>{{ task.executeCount }}</td>
-                            <td>{{ task.successCount }}</td>
-                            <td>{{ task.successRate }}%</td>
-                            <td>{{ task.avgExecuteTime }}ms</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- 失败任务列表 -->
-        <div v-else-if="activeTab === 'failTasks'">
-            <div class="tasks-table">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>任务名称</th>
-                            <th>任务分组</th>
-                            <th>失败时间</th>
-                            <th>失败次数</th>
-                            <th>错误类型</th>
-                            <th>错误信息</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="task in failedTasks" :key="task.id">
-                            <td>{{ task.taskName }}</td>
-                            <td>{{ task.taskGroup }}</td>
-                            <td>{{ formatDateTime(task.failTime) }}</td>
-                            <td>{{ task.failCount }}</td>
-                            <td>{{ task.errorType }}</td>
-                            <td class="error-message">
-                                <div class="error-message-content" :title="task.errorMessage">
-                                    {{ truncateText(task.errorMessage, 50) }}
+        </el-header>
+
+        <!-- 主要内容区域 -->
+        <el-main class="container">
+            <!-- 监控指标卡片 -->
+            <el-row :gutter="20" class="dashboard">
+                <el-col :xs="24" :sm="12" :md="6">
+                    <el-card class="card">
+                        <div class="card-title">总任务数</div>
+                        <div class="metric-value">{{ metrics.totalTasks }}</div>
+                        <div class="metric-change positive-change">较昨日 +3</div>
+                    </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="6">
+                    <el-card class="card">
+                        <div class="card-title">运行中任务</div>
+                        <div class="metric-value">{{ metrics.activeTasks }}</div>
+                        <div class="metric-change positive-change">较昨日 +1</div>
+                    </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="6">
+                    <el-card class="card">
+                        <div class="card-title">成功次数</div>
+                        <div class="metric-value">{{ metrics.successCount }}</div>
+                        <div class="metric-change positive-change">较昨日 +126</div>
+                    </el-card>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="6">
+                    <el-card class="card">
+                        <div class="card-title">失败次数</div>
+                        <div class="metric-value">{{ metrics.failCount }}</div>
+                        <div class="metric-change negative-change">较昨日 -5</div>
+                    </el-card>
+                </el-col>
+            </el-row>
+
+            <!-- 时间筛选和图表区域 -->
+            <el-row :gutter="20" class="charts-section">
+                <el-col :span="24">
+                    <el-card>
+                        <el-row :gutter="20" align="middle" class="chart-header">
+                            <el-col>
+                                <h3>执行趋势</h3>
+                            </el-col>
+                            <el-col>
+                                <el-radio-group v-model="timeRange" @change="updateCharts">
+                                    <el-radio-button label="hour">小时</el-radio-button>
+                                    <el-radio-button label="day">天</el-radio-button>
+                                    <el-radio-button label="week">周</el-radio-button>
+                                    <el-radio-button label="month">月</el-radio-button>
+                                </el-radio-group>
+                            </el-col>
+                        </el-row>
+                        <el-row :gutter="20">
+                            <el-col :xs="24" :md="12">
+                                <div class="chart-container">
+                                    <canvas ref="executeCountChart"></canvas>
                                 </div>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-        
-        <!-- 任务详情弹窗 -->
-        <div v-if="selectedTask" class="task-details">
-            <div class="task-details-header">
-                <h3 class="task-details-title">{{ selectedTask.taskName }} - 详情</h3>
-                <button class="task-details-close" @click="selectedTask = null">&times;</button>
-            </div>
-            
-            <div class="task-metrics-grid">
-                <div class="stat-item">
-                    <div class="stat-label">任务分组</div>
-                    <div class="stat-value">{{ selectedTask.taskGroup }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">状态</div>
-                    <div class="stat-value" :class="getStatusClass(selectedTask.status)">
-                        {{ getStatusText(selectedTask.status) }}
-                    </div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">总执行次数</div>
-                    <div class="stat-value">{{ selectedTask.executeCount }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">成功次数</div>
-                    <div class="stat-value">{{ selectedTask.successCount }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">失败次数</div>
-                    <div class="stat-value">{{ selectedTask.failCount }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">成功率</div>
-                    <div class="stat-value">{{ selectedTask.successRate }}%</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">平均执行时间</div>
-                    <div class="stat-value">{{ selectedTask.avgExecuteTime }}ms</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">最长执行时间</div>
-                    <div class="stat-value">{{ selectedTask.maxExecuteTime }}ms</div>
-                </div>
-            </div>
-            
-            <div class="task-metrics-grid">
-                <div class="stat-item">
-                    <div class="stat-label">Cron表达式</div>
-                    <div class="stat-value">{{ selectedTask.cronExpression }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">任务类名</div>
-                    <div class="stat-value">{{ selectedTask.jobClass }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">创建时间</div>
-                    <div class="stat-value">{{ formatDateTime(selectedTask.createTime) }}</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-label">更新时间</div>
-                    <div class="stat-value">{{ formatDateTime(selectedTask.updateTime) }}</div>
-                </div>
-            </div>
-            
-            <div class="chart-card">
-                <div class="chart-title">{{ selectedTask.taskName }} - 执行趋势</div>
-                <div class="chart-container">
-                    <canvas ref="taskDetailChart"></canvas>
-                </div>
-            </div>
-        </div>
-        </div>
+                            </el-col>
+                            <el-col :xs="24" :md="12">
+                                <div class="chart-container">
+                                    <canvas ref="successRateChart"></canvas>
+                                </div>
+                            </el-col>
+                            <el-col :xs="24" :md="12">
+                                <div class="chart-container">
+                                    <canvas ref="executeTimeChart"></canvas>
+                                </div>
+                            </el-col>
+                            <el-col :xs="24" :md="12">
+                                <div class="chart-container">
+                                    <canvas ref="errorTypeChart"></canvas>
+                                </div>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                </el-col>
+            </el-row>
+
+            <!-- 任务列表标签页 -->
+            <el-tabs v-model="activeTab" class="tabs">
+                <el-tab-pane label="任务列表" name="taskList">
+                    <!-- 搜索区域移到这里 -->
+                    <el-card class="search-container">
+                        <el-row :gutter="20" align="middle">
+                            <el-col :span="6">
+                                <el-input v-model="searchName" placeholder="搜索任务名称" class="search-input"></el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-select v-model="searchStatus" placeholder="选择任务状态" class="search-select">
+                                    <el-option label="全部" value=""></el-option>
+                                    <el-option label="运行中" value="RUNNING"></el-option>
+                                    <el-option label="已暂停" value="PAUSED"></el-option>
+                                    <el-option label="等待中" value="WAITING"></el-option>
+                                    <el-option label="失败" value="FAILED"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="4">
+                                <el-button type="primary" @click="searchTasks" class="search-btn">搜索</el-button>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                    
+                    <el-table :data="paginatedTasks" style="width: 100%" class="tasks-table">
+                        <el-table-column prop="id" label="任务ID" width="80"></el-table-column>
+                        <el-table-column prop="taskName" label="任务名称" min-width="120"></el-table-column>
+                        <el-table-column prop="taskGroup" label="任务组" width="100"></el-table-column>
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template #default="scope">
+                                <span :class="`status-${scope.row.status.toLowerCase()}`">{{ statusMap[scope.row.status] }}</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="executeCount" label="执行次数" width="100"></el-table-column>
+                        <el-table-column prop="successRate" label="成功率" width="100">
+                            <template #default="scope">
+                                <el-progress :percentage="scope.row.successRate" :format="(percentage) => `${percentage}%`" :stroke-width="6" show-text></el-progress>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="avgExecuteTime" label="平均耗时(ms)" width="120"></el-table-column>
+                        <el-table-column prop="lastExecuteTime" label="上次执行时间" width="180">
+                            <template #default="scope">
+                                {{ formatDateTime(scope.row.lastExecuteTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="nextExecuteTime" label="下次执行时间" width="180">
+                            <template #default="scope">
+                                {{ formatDateTime(scope.row.nextExecuteTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="220" fixed="right">
+                            <template #default="scope">
+                                <el-button type="primary" @click="showTaskDetail(scope.row)" size="small">详情</el-button>
+                                <el-button @click="executeTask(scope.row)" size="small">执行</el-button>
+                                <el-button 
+                                    :type="scope.row.status === 'RUNNING' ? 'warning' : 'success'" 
+                                    @click="toggleTaskStatus(scope.row)" 
+                                    size="small">
+                                    {{ scope.row.status === 'RUNNING' ? '暂停' : '启动' }}
+                                </el-button>
+                                <el-button type="info" @click="showDependencies(scope.row)" size="small">依赖</el-button>
+                                <el-button type="danger" @click="deleteTask(scope.row)" size="small">删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    
+                    <!-- 添加分页组件 -->
+                    <el-pagination
+                        v-if="filteredTasks.length > 0"
+                        @current-change="handlePageChange"
+                        @size-change="handleSizeChange"
+                        :current-page="currentPage"
+                        :page-sizes="[5, 10, 20, 50]"
+                        :page-size="pageSize"
+                        :total="filteredTasks.length"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        class="pagination">
+                    </el-pagination>
+                </el-tab-pane>
+                <el-tab-pane label="失败任务" name="failTasks">
+                    <!-- 失败任务搜索区域 -->
+                    <el-card class="search-container">
+                        <el-row :gutter="20" align="middle">
+                            <el-col :span="6">
+                                <el-input v-model="failSearchName" placeholder="搜索任务名称" class="search-input"></el-input>
+                            </el-col>
+                            <el-col :span="6">
+                                <el-select v-model="failSearchErrorType" placeholder="选择错误类型" class="search-select">
+                                    <el-option label="全部" value=""></el-option>
+                                    <el-option label="JavaException" value="JavaException"></el-option>
+                                    <el-option label="Timeout" value="Timeout"></el-option>
+                                    <el-option label="DatabaseError" value="DatabaseError"></el-option>
+                                    <el-option label="NetworkError" value="NetworkError"></el-option>
+                                    <el-option label="NullPointerException" value="NullPointerException"></el-option>
+                                </el-select>
+                            </el-col>
+                            <el-col :span="4">
+                                <el-button type="primary" @click="searchFailTasks" class="search-btn">搜索</el-button>
+                            </el-col>
+                        </el-row>
+                    </el-card>
+                    
+                    <el-table :data="paginatedFailTasks" style="width: 100%" class="tasks-table">
+                        <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                        <el-table-column prop="taskName" label="任务名称" min-width="120"></el-table-column>
+                        <el-table-column prop="taskGroup" label="任务组" width="100"></el-table-column>
+                        <el-table-column prop="failTime" label="失败时间" width="180">
+                            <template #default="scope">
+                                {{ formatDateTime(scope.row.failTime) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="failCount" label="失败次数" width="100"></el-table-column>
+                        <el-table-column prop="errorType" label="错误类型" width="120"></el-table-column>
+                        <el-table-column prop="errorMessage" label="错误信息" min-width="200">
+                            <template #default="scope">
+                                <el-popover placement="top" width="400" trigger="hover">
+                                    <template #reference>
+                                        <span>{{ truncateText(scope.row.errorMessage, 30) }}</span>
+                                    </template>
+                                    <div style="word-break: break-all;">{{ scope.row.errorMessage }}</div>
+                                </el-popover>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    
+                    <!-- 失败任务分页组件 -->
+                    <el-pagination
+                        v-if="filteredFailTasks.length > 0"
+                        @current-change="handleFailPageChange"
+                        @size-change="handleFailSizeChange"
+                        :current-page="failCurrentPage"
+                        :page-sizes="[5, 10, 20, 50]"
+                        :page-size="failPageSize"
+                        :total="filteredFailTasks.length"
+                        layout="total, sizes, prev, pager, next, jumper"
+                        class="pagination">
+                    </el-pagination>
+                </el-tab-pane>
+                <el-tab-pane label="任务排行榜" name="topTasks">
+                    <el-table :data="topTasks" style="width: 100%" class="tasks-table">
+                        <el-table-column label="排名" width="80">
+                            <template #default="scope">
+                                <el-rank :index="scope.$index + 1"></el-rank>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="taskName" label="任务名称" min-width="150"></el-table-column>
+                        <el-table-column prop="taskGroup" label="任务组" width="120"></el-table-column>
+                        <el-table-column prop="executeCount" label="执行次数" width="120"></el-table-column>
+                        <el-table-column prop="successRate" label="成功率" width="120">
+                            <template #default="scope">
+                                <el-progress :percentage="scope.row.successRate" :format="(percentage) => `${percentage}%`" :stroke-width="6" show-text></el-progress>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </el-tab-pane>
+            </el-tabs>
+
+            <!-- 任务详情弹窗 -->
+            <el-dialog v-model="dialogVisible" title="任务详情" width="70%" :before-close="handleClose">
+                <el-row :gutter="20">
+                    <el-col :xs="24" :md="12">
+                        <el-descriptions title="基本信息" :column="1" border>
+                            <el-descriptions-item label="任务ID">{{ selectedTask?.id }}</el-descriptions-item>
+                            <el-descriptions-item label="任务名称">{{ selectedTask?.taskName }}</el-descriptions-item>
+                            <el-descriptions-item label="任务组">{{ selectedTask?.taskGroup }}</el-descriptions-item>
+                            <el-descriptions-item label="任务描述">{{ selectedTask?.taskDesc }}</el-descriptions-item>
+                            <el-descriptions-item label="Cron表达式">{{ selectedTask?.cronExpression }}</el-descriptions-item>
+                            <el-descriptions-item label="任务类名">{{ selectedTask?.jobClass }}</el-descriptions-item>
+                            <el-descriptions-item label="创建时间">{{ formatDateTime(selectedTask?.createTime) }}</el-descriptions-item>
+                            <el-descriptions-item label="更新时间">{{ formatDateTime(selectedTask?.updateTime) }}</el-descriptions-item>
+                        </el-descriptions>
+                    </el-col>
+                    <el-col :xs="24" :md="12">
+                        <el-descriptions title="执行统计" :column="1" border>
+                            <el-descriptions-item label="状态">{{ statusMap[selectedTask?.status] }}</el-descriptions-item>
+                            <el-descriptions-item label="执行次数">{{ selectedTask?.executeCount }}</el-descriptions-item>
+                            <el-descriptions-item label="成功次数">{{ selectedTask?.successCount }}</el-descriptions-item>
+                            <el-descriptions-item label="失败次数">{{ selectedTask?.failCount }}</el-descriptions-item>
+                            <el-descriptions-item label="成功率">{{ selectedTask?.successRate }}%</el-descriptions-item>
+                            <el-descriptions-item label="平均执行时间">{{ selectedTask?.avgExecuteTime }}ms</el-descriptions-item>
+                            <el-descriptions-item label="最大执行时间">{{ selectedTask?.maxExecuteTime }}ms</el-descriptions-item>
+                            <el-descriptions-item label="最小执行时间">{{ selectedTask?.minExecuteTime }}ms</el-descriptions-item>
+                        </el-descriptions>
+                    </el-col>
+                </el-row>
+                <el-row style="margin-top: 20px;">
+                    <el-col :span="24">
+                        <el-card>
+                            <div slot="header">
+                                <span>执行趋势图</span>
+                            </div>
+                            <div class="chart-container">
+                                <canvas ref="taskDetailChart"></canvas>
+                            </div>
+                        </el-card>
+                    </el-col>
+                </el-row>
+            </el-dialog>
+        </el-main>
     </div>
 
-    <script>
-        const { createApp } = Vue;
-        const { default: axios } = axios;
-        
-        createApp({
-            data() {
-                return {
-                    metrics: {
-                        totalTasks: 0,
-                        activeTasks: 0,
-                        successCount: 0,
-                        failCount: 0,
-                        avgExecuteTime: 0,
-                        maxExecuteTime: 0,
-                        minExecuteTime: 0,
-                        successRate: 0
-                    },
-                    tasks: [],
-                    topTasks: [],
-                    failedTasks: [],
-                    selectedTask: null,
-                    activeTab: 'taskList',
-                    timeRange: 'day',
-                    loading: false,
-                    // 图表实例
-                    charts: {
-                        executeCountChart: null,
-                        successRateChart: null,
-                        executeTimeChart: null,
-                        errorTypeChart: null,
-                        taskDetailChart: null
-                    }
-                }
-            },
-            mounted() {
-                // 检查登录状态
-                if (!localStorage.getItem('isLoggedIn')) {
-                    window.location.href = '/login.html';
-                    return;
-                }
-
-                // 直接使用模拟数据
-                this.loadMockData();
-            },
-            watch: {
-                timeRange() {
-                    // 当时间范围改变时，更新图表数据
-                    this.updateCharts();
-                }
-            },
-            methods: {
-                // 加载模拟数据
-                loadMockData() {
-                    this.loading = true;
-                    
-                    // 模拟加载延迟
-                    setTimeout(() => {
-                        // 模拟监控指标数据
-                        this.metrics = {
-                            totalTasks: 28,
-                            activeTasks: 24,
-                            successCount: 1256,
-                            failCount: 24,
-                            avgExecuteTime: 350,
-                            maxExecuteTime: 15000,
-                            minExecuteTime: 50,
-                            successRate: 98.1
-                        };
-                        
-                        // 模拟任务列表数据
-                        this.tasks = this.generateMockTasks();
-                        
-                        // 生成任务排行榜数据
-                        this.topTasks = this.generateTopTasks();
-                        
-                        // 生成失败任务列表
-                        this.failedTasks = this.generateFailedTasks();
-                        
-                        // 初始化图表
-                        this.initCharts();
-                        
-                        this.loading = false;
-                    }, 500);
-                },
-                
-                // 生成模拟任务数据
-                generateMockTasks() {
-                    const statuses = ['RUNNING', 'PAUSED', 'WAITING'];
-                    const groups = ['系统任务', '业务任务', '定时清理', '数据同步'];
-                    const tasks = [];
-                    
-                    for (let i = 1; i <= 28; i++) {
-                        const status = statuses[Math.floor(Math.random() * statuses.length)];
-                        const taskGroup = groups[Math.floor(Math.random() * groups.length)];
-                        const successRate = Math.floor(Math.random() * 100) + 1;
-                        const executeCount = Math.floor(Math.random() * 500) + 10;
-                        const successCount = Math.floor(executeCount * (successRate / 100));
-                        const failCount = executeCount - successCount;
-                        const avgExecuteTime = Math.floor(Math.random() * 1000) + 100;
-                        
-                        // 生成随机日期
-                        const now = new Date();
-                        const createTime = new Date(now.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000);
-                        const lastExecuteTime = new Date(now.getTime() - Math.random() * 24 * 60 * 60 * 1000);
-                        const nextExecuteTime = new Date(now.getTime() + Math.random() * 24 * 60 * 60 * 1000);
-                        
-                        tasks.push({
-                            id: i,
-                            taskName: `Task-${i}`,
-                            taskGroup: taskGroup,
-                            taskDesc: `这是任务 ${i} 的详细描述信息，包含任务的功能和执行逻辑。`,
-                            cronExpression: `0 ${Math.floor(Math.random() * 60)} ${Math.floor(Math.random() * 24)} * * ?`,
-                            jobClass: `org.poying.jobs.Task${i}Impl`,
-                            status: status,
-                            createTime: createTime,
-                            updateTime: new Date(createTime.getTime() + Math.random() * 15 * 24 * 60 * 60 * 1000),
-                            lastExecuteTime: lastExecuteTime,
-                            nextExecuteTime: nextExecuteTime,
-                            executeCount: executeCount,
-                            successCount: successCount,
-                            failCount: failCount,
-                            successRate: successRate,
-                            avgExecuteTime: avgExecuteTime,
-                            maxExecuteTime: avgExecuteTime * 2,
-                            minExecuteTime: Math.max(10, avgExecuteTime / 2)
-                        });
-                    }
-                    
-                    return tasks;
-                },
-                
-                // 生成任务排行榜数据
-                generateTopTasks() {
-                    // 从任务列表中获取数据并排序
-                    return [...this.tasks]
-                        .sort((a, b) => b.executeCount - a.executeCount)
-                        .slice(0, 10);
-                },
-                
-                // 生成失败任务数据
-                generateFailedTasks() {
-                    const errorTypes = ['JavaException', 'Timeout', 'DatabaseError', 'NetworkError', 'NullPointerException'];
-                    const failedTasks = [];
-                    
-                    // 筛选出有失败记录的任务
-                    const tasksWithFailures = this.tasks.filter(task => task.failCount > 0);
-                    
-                    // 为每个有失败记录的任务生成详细的失败信息
-                    tasksWithFailures.forEach((task, index) => {
-                        const errorType = errorTypes[Math.floor(Math.random() * errorTypes.length)];
-                        const failTime = new Date(new Date().getTime() - Math.random() * 24 * 60 * 60 * 1000);
-                        
-                        let errorMessage = '';
-                        switch(errorType) {
-                            case 'JavaException':
-                                errorMessage = 'java.lang.Exception: 任务执行过程中发生异常，请检查任务配置和代码逻辑。';
-                                break;
-                            case 'Timeout':
-                                errorMessage = 'TaskTimeoutException: 任务执行超时，请检查任务复杂度或调整超时设置。';
-                                break;
-                            case 'DatabaseError':
-                                errorMessage = 'SQLException: 数据库连接失败或SQL执行错误，请检查数据库连接配置。';
-                                break;
-                            case 'NetworkError':
-                                errorMessage = 'IOException: 网络连接异常，请检查网络连接和目标服务可用性。';
-                                break;
-                            case 'NullPointerException':
-                                errorMessage = 'NullPointerException: 空指针异常，请检查任务代码中的对象引用。';
-                                break;
-                        }
-                        
-                        failedTasks.push({
-                            id: index + 1000,
-                            taskName: task.taskName,
-                            taskGroup: task.taskGroup,
-                            failTime: failTime,
-                            failCount: task.failCount,
-                            errorType: errorType,
-                            errorMessage: errorMessage
-                        });
-                    });
-                    
-                    // 按失败时间降序排序
-                    return failedTasks.sort((a, b) => b.failTime - a.failTime).slice(0, 15);
-                },
-                
-                // 初始化图表
-                initCharts() {
-                    // 执行次数趋势图
-                    this.initExecuteCountChart();
-                    
-                    // 成功率趋势图
-                    this.initSuccessRateChart();
-                    
-                    // 执行时间趋势图
-                    this.initExecuteTimeChart();
-                    
-                    // 错误类型分布图
-                    this.initErrorTypeChart();
-                },
-                
-                // 更新图表
-                updateCharts() {
-                    this.updateExecuteCountChart();
-                    this.updateSuccessRateChart();
-                    this.updateExecuteTimeChart();
-                },
-                
-                // 初始化执行次数趋势图
-                initExecuteCountChart() {
-                    const ctx = this.$refs.executeCountChart.getContext('2d');
-                    this.charts.executeCountChart = new Chart(ctx, {
-                        type: 'line',
-                        data: this.getExecuteCountChartData(),
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                },
-                                title: {
-                                    display: false
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                // 更新执行次数趋势图
-                updateExecuteCountChart() {
-                    this.charts.executeCountChart.data = this.getExecuteCountChartData();
-                    this.charts.executeCountChart.update();
-                },
-                
-                // 获取执行次数图表数据
-                getExecuteCountChartData() {
-                    let labels, data;
-                    
-                    if (this.timeRange === 'hour') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        data = labels.map(() => Math.floor(Math.random() * 50) + 10);
-                    } else if (this.timeRange === 'day') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        data = labels.map(() => Math.floor(Math.random() * 100) + 30);
-                    } else if (this.timeRange === 'week') {
-                        labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-                        data = labels.map(() => Math.floor(Math.random() * 500) + 200);
-                    } else if (this.timeRange === 'month') {
-                        labels = Array.from({length: 30}, (_, i) => `${i + 1}日`);
-                        data = labels.map(() => Math.floor(Math.random() * 1000) + 500);
-                    }
-                    
-                    return {
-                        labels: labels,
-                        datasets: [{
-                            label: '执行次数',
-                            data: data,
-                            borderColor: 'rgb(75, 192, 192)',
-                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-                            tension: 0.3
-                        }]
-                    };
-                },
-                
-                // 初始化成功率趋势图
-                initSuccessRateChart() {
-                    const ctx = this.$refs.successRateChart.getContext('2d');
-                    this.charts.successRateChart = new Chart(ctx, {
-                        type: 'line',
-                        data: this.getSuccessRateChartData(),
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    min: 80,
-                                    max: 100,
-                                    ticks: {
-                                        callback: function(value) {
-                                            return value + '%';
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                // 更新成功率趋势图
-                updateSuccessRateChart() {
-                    this.charts.successRateChart.data = this.getSuccessRateChartData();
-                    this.charts.successRateChart.update();
-                },
-                
-                // 获取成功率图表数据
-                getSuccessRateChartData() {
-                    let labels, data;
-                    
-                    if (this.timeRange === 'hour') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        data = labels.map(() => 90 + Math.random() * 10);
-                    } else if (this.timeRange === 'day') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        data = labels.map(() => 88 + Math.random() * 12);
-                    } else if (this.timeRange === 'week') {
-                        labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-                        data = labels.map(() => 85 + Math.random() * 15);
-                    } else if (this.timeRange === 'month') {
-                        labels = Array.from({length: 30}, (_, i) => `${i + 1}日`);
-                        data = labels.map(() => 88 + Math.random() * 12);
-                    }
-                    
-                    return {
-                        labels: labels,
-                        datasets: [{
-                            label: '成功率',
-                            data: data,
-                            borderColor: 'rgb(255, 99, 132)',
-                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
-                            tension: 0.3
-                        }]
-                    };
-                },
-                
-                // 初始化执行时间趋势图
-                initExecuteTimeChart() {
-                    const ctx = this.$refs.executeTimeChart.getContext('2d');
-                    this.charts.executeTimeChart = new Chart(ctx, {
-                        type: 'line',
-                        data: this.getExecuteTimeChartData(),
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                // 更新执行时间趋势图
-                updateExecuteTimeChart() {
-                    this.charts.executeTimeChart.data = this.getExecuteTimeChartData();
-                    this.charts.executeTimeChart.update();
-                },
-                
-                // 获取执行时间图表数据
-                getExecuteTimeChartData() {
-                    let labels, avgData, maxData;
-                    
-                    if (this.timeRange === 'hour') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        avgData = labels.map(() => Math.floor(Math.random() * 200) + 100);
-                        maxData = labels.map((_, i) => avgData[i] * (1 + Math.random() * 1.5));
-                    } else if (this.timeRange === 'day') {
-                        labels = Array.from({length: 24}, (_, i) => `${i}:00`);
-                        avgData = labels.map(() => Math.floor(Math.random() * 300) + 150);
-                        maxData = labels.map((_, i) => avgData[i] * (1 + Math.random() * 2));
-                    } else if (this.timeRange === 'week') {
-                        labels = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
-                        avgData = labels.map(() => Math.floor(Math.random() * 400) + 200);
-                        maxData = labels.map((_, i) => avgData[i] * (1 + Math.random() * 2.5));
-                    } else if (this.timeRange === 'month') {
-                        labels = Array.from({length: 30}, (_, i) => `${i + 1}日`);
-                        avgData = labels.map(() => Math.floor(Math.random() * 350) + 180);
-                        maxData = labels.map((_, i) => avgData[i] * (1 + Math.random() * 2));
-                    }
-                    
-                    return {
-                        labels: labels,
-                        datasets: [{
-                            label: '平均执行时间(ms)',
-                            data: avgData,
-                            borderColor: 'rgb(54, 162, 235)',
-                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-                            tension: 0.3
-                        }, {
-                            label: '最长执行时间(ms)',
-                            data: maxData,
-                            borderColor: 'rgb(255, 159, 64)',
-                            backgroundColor: 'rgba(255, 159, 64, 0.2)',
-                            tension: 0.3
-                        }]
-                    };
-                },
-                
-                // 初始化错误类型分布图
-                initErrorTypeChart() {
-                    const ctx = this.$refs.errorTypeChart.getContext('2d');
-                    this.charts.errorTypeChart = new Chart(ctx, {
-                        type: 'doughnut',
-                        data: {
-                            labels: ['JavaException', 'Timeout', 'DatabaseError', 'NetworkError', 'NullPointerException'],
-                            datasets: [{
-                                data: [45, 25, 15, 10, 5],
-                                backgroundColor: [
-                                    'rgba(255, 99, 132, 0.8)',
-                                    'rgba(54, 162, 235, 0.8)',
-                                    'rgba(255, 206, 86, 0.8)',
-                                    'rgba(75, 192, 192, 0.8)',
-                                    'rgba(153, 102, 255, 0.8)'
-                                ],
-                                borderColor: [
-                                    'rgba(255, 99, 132, 1)',
-                                    'rgba(54, 162, 235, 1)',
-                                    'rgba(255, 206, 86, 1)',
-                                    'rgba(75, 192, 192, 1)',
-                                    'rgba(153, 102, 255, 1)'
-                                ],
-                                borderWidth: 1
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'right',
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                // 查看任务详情
-                viewTaskDetails(task) {
-                    this.selectedTask = task;
-                    
-                    // 延迟初始化详情图表，确保DOM已经更新
-                    setTimeout(() => {
-                        this.initTaskDetailChart();
-                    }, 100);
-                },
-                
-                // 初始化任务详情图表
-                initTaskDetailChart() {
-                    if (this.charts.taskDetailChart) {
-                        this.charts.taskDetailChart.destroy();
-                    }
-                    
-                    const ctx = this.$refs.taskDetailChart.getContext('2d');
-                    
-                    // 生成最近7天的执行数据
-                    const labels = ['第1天', '第2天', '第3天', '第4天', '第5天', '第6天', '第7天'];
-                    const successData = labels.map(() => Math.floor(Math.random() * 50) + 10);
-                    const failData = labels.map(() => Math.floor(Math.random() * 5) + 0);
-                    const timeData = labels.map(() => Math.floor(Math.random() * 500) + 100);
-                    
-                    this.charts.taskDetailChart = new Chart(ctx, {
-                        type: 'bar',
-                        data: {
-                            labels: labels,
-                            datasets: [{
-                                label: '成功次数',
-                                data: successData,
-                                backgroundColor: 'rgba(75, 192, 192, 0.7)',
-                                yAxisID: 'y'
-                            }, {
-                                label: '失败次数',
-                                data: failData,
-                                backgroundColor: 'rgba(255, 99, 132, 0.7)',
-                                yAxisID: 'y'
-                            }, {
-                                label: '平均执行时间(ms)',
-                                data: timeData,
-                                type: 'line',
-                                backgroundColor: 'rgba(54, 162, 235, 0.7)',
-                                borderColor: 'rgba(54, 162, 235, 1)',
-                                borderWidth: 2,
-                                yAxisID: 'y1'
-                            }]
-                        },
-                        options: {
-                            responsive: true,
-                            maintainAspectRatio: false,
-                            plugins: {
-                                legend: {
-                                    position: 'top',
-                                }
-                            },
-                            scales: {
-                                y: {
-                                    beginAtZero: true,
-                                    position: 'left',
-                                    title: {
-                                        display: true,
-                                        text: '执行次数'
-                                    }
-                                },
-                                y1: {
-                                    beginAtZero: true,
-                                    position: 'right',
-                                    grid: {
-                                        drawOnChartArea: false,
-                                    },
-                                    title: {
-                                        display: true,
-                                        text: '执行时间(ms)'
-                                    }
-                                }
-                            }
-                        }
-                    });
-                },
-                
-                // 格式化日期时间
-                formatDateTime(dateTime) {
-                    if (!dateTime) return '-';
-                    
-                    // 如果是Date对象直接使用，否则转换
-                    const date = dateTime instanceof Date ? dateTime : new Date(dateTime);
-                    
-                    const year = date.getFullYear();
-                    const month = String(date.getMonth() + 1).padStart(2, '0');
-                    const day = String(date.getDate()).padStart(2, '0');
-                    const hours = String(date.getHours()).padStart(2, '0');
-                    const minutes = String(date.getMinutes()).padStart(2, '0');
-                    const seconds = String(date.getSeconds()).padStart(2, '0');
-                    
-                    return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
-                },
-                
-                // 获取状态样式类名
-                getStatusClass(status) {
-                    switch(status) {
-                        case 'RUNNING':
-                            return 'status-running';
-                        case 'PAUSED':
-                            return 'status-paused';
-                        case 'WAITING':
-                            return 'status-waiting';
-                        default:
-                            return 'status-inactive';
-                    }
-                },
-                
-                // 获取状态文本
-                getStatusText(status) {
-                    switch(status) {
-                        case 'RUNNING':
-                            return '运行中';
-                        case 'PAUSED':
-                            return '已暂停';
-                        case 'WAITING':
-                            return '等待中';
-                        default:
-                            return '禁用';
-                    }
-                },
-                
-                // 截断文本
-                truncateText(text, length) {
-                    if (!text) return '';
-                    if (text.length <= length) return text;
-                    return text.substring(0, length) + '...';
-                },
-                
-                // 执行任务
-                executeTask(task) {
-                    if (!confirm(`确定要执行任务 "${task.taskName}" 吗？`)) {
-                        return;
-                    }
-                    
-                    alert(`任务 "${task.taskName}" 已触发执行`);
-                },
-                
-                // 删除任务
-                deleteTask(task) {
-                    if (!confirm(`确定要删除任务 "${task.taskName}" 吗？`)) {
-                        return;
-                    }
-                    
-                    // 从列表中移除任务
-                    const index = this.tasks.findIndex(t => t.id === task.id);
-                    if (index !== -1) {
-                        this.tasks.splice(index, 1);
-                        alert(`任务 "${task.taskName}" 已删除`);
-                        
-                        // 重新生成排行榜和更新指标
-                        this.topTasks = this.generateTopTasks();
-                        this.updateMetrics();
-                    }
-                },
-                
-                // 更新指标
-                updateMetrics() {
-                    this.metrics.totalTasks = this.tasks.length;
-                    this.metrics.activeTasks = this.tasks.filter(task => task.status === 'RUNNING').length;
-                    
-                    // 重新计算其他指标
-                    const totalExecuteCount = this.tasks.reduce((sum, task) => sum + task.executeCount, 0);
-                    const totalSuccessCount = this.tasks.reduce((sum, task) => sum + task.successCount, 0);
-                    const totalFailCount = this.tasks.reduce((sum, task) => sum + task.failCount, 0);
-                    
-                    this.metrics.successCount = totalSuccessCount;
-                    this.metrics.failCount = totalFailCount;
-                    this.metrics.successRate = totalExecuteCount > 0 ? Math.round((totalSuccessCount / totalExecuteCount) * 1000) / 10 : 100;
-                },
-                
-                // 退出登录
-                logout() {
-                    if (confirm('确定要退出登录吗？')) {
-                        localStorage.removeItem('isLoggedIn');
-                        window.location.href = '/login.html';
-                    }
-                }
-            }
-        }).mount('#app');
-    </script>
+    <!-- 引入自定义脚本 -->
+    <script src="/js/utils.js" type="module"></script>
+    <script src="/js/chart-utils.js" type="module"></script>
+    <script src="/js/app.js" type="module"></script>
 </body>
 </html>
